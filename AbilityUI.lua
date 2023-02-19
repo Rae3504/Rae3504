@@ -1,5 +1,3 @@
---!strict
-
 --// Class
 local AbilityUI = {}
 AbilityUI.__index = AbilityUI
