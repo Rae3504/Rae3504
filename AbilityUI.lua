@@ -1,3 +1,9 @@
+--!strict
+
+--// Class
+local AbilityUI = {}
+AbilityUI.__index = AbilityUI
+
 --// Roblox Services
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local TweenService = game:GetService('TweenService')
@@ -15,34 +21,23 @@ local AbilityScreenGui = ReplicatedStorage.UI.AbilityUI
 local PRESS_CELL_TWEEN_INFO = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true)
 local PRESS_CELL_SIZE_INSET = UDim2.fromOffset(6, 6)
 
-local AbilityUI = {}
-AbilityUI.__index = AbilityUI
-
 --// Helper functions
-local function HasIndex(Dict, Index)
-	for i, _ in pairs(Dict) do
-		if i == Index then
-			return true
-		end
-	end
-end
-
-local function CancelThread(Thread)
+local function CancelThread(Thread: thread)
 	pcall(function()
 		task.cancel(Thread)
 	end)
 end
 
 --// Private API
-local function AddCell(self, Cell)
-	assert(not HasIndex(self.Cells, Cell.Name), 'Cannot have two cells with the same name')
-	
+local function AddCell(self: AbilityUI, Cell: Frame)
+	assert(not self.Cells[Cell.Name], 'Cannot have two cells with the same name')
+
 	Cell:SetAttribute('OriginalSize', Cell.Size)
 		
 	self.Cells[Cell.Name] = Cell
 end
 
-local function SetCircleProgressBarTransparency(CircleProgressBar, Transparency)
+local function SetCircleProgressBarTransparency(CircleProgressBar: Frame, Transparency: number)
 	CircleProgressBar.Left.ImageLabel.ImageTransparency = Transparency
 	CircleProgressBar.Right.ImageLabel.ImageTransparency = Transparency
 end
@@ -52,8 +47,7 @@ function AbilityUI.new()
 	local self = setmetatable({}, AbilityUI)
 	
 	self.UI = AbilityScreenGui:Clone()
-	self.UI.Parent = PlayerGui
-	
+
 	self.Cells = {}
 	self.Threads = {}
 		
@@ -61,6 +55,8 @@ function AbilityUI.new()
 end
 
 function AbilityUI:Setup()
+	self.UI.Parent = PlayerGui
+
 	for _,Cell in pairs(self.UI.Cells:GetChildren()) do
 		if not Cell:IsA('Frame') then continue end
 		
@@ -69,7 +65,7 @@ function AbilityUI:Setup()
 end
 
 -- Signify whether a cell can be activated or not
-function AbilityUI:SetDisabled(CellName, Disabled)
+function AbilityUI:SetDisabled(CellName: string, Disabled: boolean)
 	local Cell = self.Cells[CellName]
 
 	if not Cell then warn('Cell not found: ', CellName) return end
@@ -85,7 +81,7 @@ function AbilityUI:SetDisabled(CellName, Disabled)
 end
 
 -- To signifiy whether an ability is toggled or not
-function AbilityUI:ToggleCell(CellName, Toggled)
+function AbilityUI:ToggleCell(CellName: string, Toggled: boolean)
 	local Cell = self.Cells[CellName]
 	
 	if not Cell then warn('Cell not found: ', CellName) return end
@@ -97,7 +93,7 @@ function AbilityUI:ToggleCell(CellName, Toggled)
 end
 
 -- Starts a cooldown effect (for abilities that are cooldown based)
-function AbilityUI:StartCellCooldown(CellName, Duration)
+function AbilityUI:StartCellCooldown(CellName: string, Duration: number)
 	local Cell = self.Cells[CellName]
 
 	if not Cell then warn('Cell not found: ', CellName) return end
@@ -123,7 +119,7 @@ function AbilityUI:StartCellCooldown(CellName, Duration)
 	end)
 end
 
-function AbilityUI:PressCell(CellName)
+function AbilityUI:PressCell(CellName: string)
 	local Cell = self.Cells[CellName]
 
 	if not Cell then warn('Cell not found: ', CellName) return end
@@ -137,5 +133,7 @@ end
 function AbilityUI:Destroy()
 	self.UI:Destroy()
 end
+
+type AbilityUI = typeof(AbilityUI.new())
 
 return AbilityUI
